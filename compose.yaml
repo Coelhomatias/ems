@@ -1,0 +1,60 @@
+version: '3'
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: always
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - ./mosquitto-data/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto-data/data:/mosquitto/data
+      - ./mosquitto-data/logs:/mosquitto/log
+
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=user
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password1234
+      - DOCKER_INFLUXDB_INIT_ORG=ems
+      - DOCKER_INFLUXDB_INIT_BUCKET=ems_final_project
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=j0MqZ-uFHH26tr8ONDeYPHAiLu7xNGGxbeiE4Y1KMvF79cIEIUIEIpsYv5rhB3UEfuVpUXVUcGa9z0WFU9nC3g==
+  
+  telegraf:
+    image: telegraf
+    container_name: telegraf
+    restart: always
+    volumes:
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - mosquitto
+      - influxdb
+  # Message structure: "measurement field1=value,field2=value,field3=value"
+  
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - influxdb
+      # user: admin
+      # Pass: ems1234
+
+volumes:
+  influxdb-data:
+  influxdb-config:
+  grafana-data:
