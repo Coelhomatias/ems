@@ -3,7 +3,7 @@ services:
   mosquitto:
     image: eclipse-mosquitto:2
     container_name: mosquitto
-    restart: always
+    restart: unless-stopped
     ports:
       - 1883:1883
       - 9001:9001
@@ -15,7 +15,7 @@ services:
   influxdb:
     image: influxdb
     container_name: influxdb
-    restart: always
+    restart: unless-stopped
     ports:
       - "8086:8086"
     volumes:
@@ -32,7 +32,7 @@ services:
   telegraf:
     image: telegraf
     container_name: telegraf
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
     depends_on:
@@ -43,7 +43,7 @@ services:
   grafana:
     image: grafana/grafana
     container_name: grafana
-    restart: always
+    restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
@@ -51,8 +51,6 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - influxdb
-      # user: admin
-      # Pass: ems1234
 
 volumes:
   influxdb-data:
